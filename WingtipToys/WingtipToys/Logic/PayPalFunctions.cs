@@ -62,6 +62,8 @@ public class NVPAPICaller
         string returnURL = "https://localhost:44311/Checkout/CheckoutReview.aspx";
         string cancelURL = "https://localhost:44311/Checkout/CheckoutCancel.aspx";
 
+        amt = amt.Replace(",", ".");
+
         NVPCodec encoder = new NVPCodec();
         encoder["METHOD"] = "SetExpressCheckout";
         encoder["RETURNURL"] = returnURL;
@@ -70,7 +72,7 @@ public class NVPAPICaller
         encoder["PAYMENTREQUEST_0_AMT"] = amt;
         encoder["PAYMENTREQUEST_0_ITEMAMT"] = amt ;
         encoder["PAYMENTREQUEST_0_PAYMENTACTION"] = "Sale";
-        encoder["PAYMENTREQUEST_0_CURRENCYCODE"] = "USD";
+        encoder["PAYMENTREQUEST_0_CURRENCYCODE"] = "PLN";
 
         // Get the Shopping Cart Products
         using (WingtipToys.Logic.ShoppingCartActions myCartOrders = new WingtipToys.Logic.ShoppingCartActions())
@@ -80,7 +82,7 @@ public class NVPAPICaller
             for (int i = 0; i < myOrderList.Count; i++)
             {
                 encoder["L_PAYMENTREQUEST_0_NAME" + i] = myOrderList[i].Product.ProductName.ToString();
-                encoder["L_PAYMENTREQUEST_0_AMT" + i] = myOrderList[i].Product.UnitPrice.ToString();
+                encoder["L_PAYMENTREQUEST_0_AMT" + i] = myOrderList[i].Product.UnitPrice.ToString().Replace(",", ".");
                 encoder["L_PAYMENTREQUEST_0_QTY" + i] = myOrderList[i].Quantity.ToString();
             }
         }
@@ -148,12 +150,14 @@ public class NVPAPICaller
             pEndPointURL = pEndPointURL_SB;
         }
 
+        finalPaymentAmount = finalPaymentAmount.Replace(",",".");
+
         NVPCodec encoder = new NVPCodec();
         encoder["METHOD"] = "DoExpressCheckoutPayment";
         encoder["TOKEN"] = token;
         encoder["PAYERID"] = PayerID;
         encoder["PAYMENTREQUEST_0_AMT"] = finalPaymentAmount;
-        encoder["PAYMENTREQUEST_0_CURRENCYCODE"] = "USD";
+        encoder["PAYMENTREQUEST_0_CURRENCYCODE"] = "PLN";
         encoder["PAYMENTREQUEST_0_PAYMENTACTION"] = "Sale";
 
         string pStrrequestforNvp = encoder.Encode();
@@ -183,7 +187,11 @@ public class NVPAPICaller
 
         string strPost = NvpRequest + "&" + buildCredentialsNVPString();
         strPost = strPost + "&BUTTONSOURCE=" + HttpUtility.UrlEncode(BNCode);
-        ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
+        //ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
+        //ServicePointManager.SecurityProtocol |=
+        //SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3;
+        ServicePointManager.SecurityProtocol = (SecurityProtocolType)192 |
+        (SecurityProtocolType)768 | (SecurityProtocolType)3072;
         HttpWebRequest objRequest = (HttpWebRequest)WebRequest.Create(url);
         objRequest.Timeout = Timeout;
         objRequest.Method = "POST";
@@ -228,7 +236,7 @@ public class NVPAPICaller
         if (!IsEmpty(Subject))
             codec["SUBJECT"] = Subject;
 
-        codec["VERSION"] = "124.0";
+        codec["VERSION"] = "84.0";
 
         return codec.Encode();
     }

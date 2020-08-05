@@ -50,7 +50,7 @@ namespace WingtipToys.Checkout
                             Response.Redirect("CheckoutError.aspx?" + "Desc=Amount%20total%20mismatch.");
                         }
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         Response.Redirect("CheckoutError.aspx?" + "Desc=Amount%20total%20mismatch.");
                     }
